@@ -2,9 +2,8 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
+	"errors"
 	"net/http"
-	"time"
 )
 
 type Server struct {
@@ -14,19 +13,20 @@ type Server struct {
 func (s *Server) getExpense(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	purchase := Expense{
-		ID:       1,
-		Amount:   450,
-		Category: "Еда",
-		Note:     "Обед в кафе",
-		SpentAt:  time.Now().Truncate(time.Second),
-	}
+	var e Expense
+	err := s.db.QueryRowContext(r.Context(),
+		`SELECT id, amount, category, note, spent_at
+     FROM expenses
+     WHERE id = $1`,
+		4, // so far hardcoded
+	).Scan(&e.ID, &e.Amount, &e.Category, &e.Note, &e.SpentAt)
 
-	jsonBytes, err := json.Marshal(purchase)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-
-	w.Write(jsonBytes)
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
 }

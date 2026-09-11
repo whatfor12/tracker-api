@@ -10,11 +10,11 @@ import (
 )
 
 func main() {
-    if err := godotenv.Load(); err != nil {
-        log.Fatal("Error loading .env file")
-    }
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-    connURL := os.Getenv("DATABASE_URL")
+	connURL := os.Getenv("DATABASE_URL")
 	if connURL == "" {
 		log.Fatal("DATABASE_URL is not set")
 	}
@@ -29,7 +29,7 @@ func main() {
 
 	log.Println("Connected to DB")
 
-	server := &Server{ db: db }
+	server := &Server{db: db}
 
 	http.HandleFunc("/expenses/{id}", server.getExpense)
 
