@@ -1,12 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
 )
 
-func getExpense(w http.ResponseWriter, r *http.Request) {
+type Server struct {
+	db *sql.DB
+}
+
+func (s *Server) getExpense(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	purchase := Expense{

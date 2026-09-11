@@ -29,7 +29,9 @@ func main() {
 
 	log.Println("Connected to DB")
 
-	http.HandleFunc("/expenses/{id}", getExpense)
+	server := &Server{ db: db }
+
+	http.HandleFunc("/expenses/{id}", server.getExpense)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
