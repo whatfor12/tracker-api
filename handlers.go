@@ -13,8 +13,6 @@ type Server struct {
 }
 
 func (s *Server) getExpense(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
@@ -38,6 +36,7 @@ func (s *Server) getExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(e)
 }
 
@@ -82,4 +81,41 @@ func (s *Server) deleteExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) updateExpense(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var e Expense
+	err = json.NewDecoder(r.Body).Decode(&e)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	err = s.db.QueryRowContext(r.Context(),
+		`UPDATE expenses
+     SET amount = $1, category = $2, note = $3, spent_at = $4
+     WHERE id = $5
+     RETURNING id, amount, category, note, spent_at`,
+		e.Amount, e.Category, e.Note, e.SpentAt, id,
+	).Scan(&e.ID, &e.Amount, &e.Category, &e.Note, &e.SpentAt)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(e)
 }
