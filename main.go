@@ -31,7 +31,8 @@ func main() {
 
 	server := &Server{db: db}
 
-	http.HandleFunc("/expenses/{id}", server.getExpense)
+	http.HandleFunc("GET /expenses/{id}", server.getExpense)
+	http.HandleFunc("POST /expenses", server.createExpense)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
