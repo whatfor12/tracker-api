@@ -37,6 +37,8 @@ func (s *Server) getExpense(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+
+	json.NewEncoder(w).Encode(e)
 }
 
 func (s *Server) createExpense(w http.ResponseWriter, r *http.Request) {
