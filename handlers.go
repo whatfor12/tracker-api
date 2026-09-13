@@ -63,3 +63,23 @@ func (s *Server) createExpense(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(e)
 }
+
+func (s *Server) deleteExpense(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+	result, err := s.db.ExecContext(r.Context(),
+		`DELETE FROM expenses WHERE id = $1`,
+		id,
+	)
+
+	rowsAffected, err := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

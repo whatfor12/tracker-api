@@ -33,6 +33,7 @@ func main() {
 
 	http.HandleFunc("GET /expenses/{id}", server.getExpense)
 	http.HandleFunc("POST /expenses", server.createExpense)
+	http.HandleFunc("DELETE /expenses/{id}", server.deleteExpense)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
